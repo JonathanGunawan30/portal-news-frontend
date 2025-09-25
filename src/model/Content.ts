@@ -1,5 +1,5 @@
 export interface Content {
-    ID: number;
+    id: number;
     title: string;
     description: string;
     excerpt: string;
@@ -11,6 +11,7 @@ export interface Content {
     created_by_name: string;
     created_by_id: number;
     category_id: number;
+    category_name: string;
 }
 
 export interface ContentRequest{
