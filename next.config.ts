@@ -10,7 +10,19 @@ const nextConfig: NextConfig = {
                 destination: "http://localhost:8080/api/:path*",
             },
         ]
-    }
+    },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'blog.jonathangunawan.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'pub-73d673f650c8460c823f39b38c29c12d.r2.dev',
+            },
+        ],
+    },
 
 };
 
