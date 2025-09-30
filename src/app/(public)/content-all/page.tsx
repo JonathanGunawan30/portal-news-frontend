@@ -61,12 +61,29 @@ export default function ContentAll() {
                             <div className="overflow-hidden rounded-md bg-gray-100 transition-all hover:scale-105">
                                 <Link className="relative block aspect-ratio" href={`/content-all/detail/${content.id}`}>
                                     {content.image != "" && (
-                                        <Image src={content.image} alt={content.title} fill={true}
-                                               className="object-cover transition-all"/>
+                                        <div className="relative aspect-video">
+                                            <Image
+                                                src={content.image}
+                                                alt={content.title}
+                                                fill
+                                                className="object-cover"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            />
+                                        </div>
+
                                     )}
                                     {content.image == "" && (
-                                        <img src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSROxdqcF6F-dngsRT-lYEA46xmPbXSFFd1FQ&s"} alt={content.title} width={600} height={400} className="object-cover transition-all"/>
+                                        <div className="relative aspect-video">
+                                            <Image
+                                                src="/img/content-not-found.png"
+                                                alt={content.title}
+                                                fill
+                                                className="object-cover transition-all"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            />
+                                        </div>
                                     )}
+
                                 </Link>
                             </div>
                             <div>
@@ -88,7 +105,13 @@ export default function ContentAll() {
                                     <Link href={""}>
                                         <div className="flex items-center gap-3">
                                             <div className="relative h-5 w-5 flex-shrink-0">
-                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7xmT7OxoAs2AfeX3RWF_RDlUMevO2VDG31w&s" alt="author" className="rounded-full object-cover" sizes="20px"/>
+                                                <Image
+                                                    src="/img/admin.png"
+                                                    alt="author"
+                                                    width={20}
+                                                    height={20}
+                                                    className="rounded-full object-cover"
+                                                />
                                             </div>
                                             <span className="truncate text-sm">
                                             {content.author}
