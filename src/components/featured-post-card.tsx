@@ -36,7 +36,14 @@ export function FeaturedPostCard({ content }: PostCardProps) {
                 <div className="mt-3 flex items-center space-x-3 text-gray-500">
                     <div className="flex items-center gap-3">
                         <div className="relative h-5 w-5 flex-shrink-0">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7xmT7OxoAs2AfeX3RWF_RDlUMevO2VDG31w&s" alt="author" className="rounded-full object-cover" />
+                            <Image
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7xmT7OxoAs2AfeX3RWF_RDlUMevO2VDG31w&s"
+                                alt="author"
+                                width={20}
+                                height={20}
+                                className="rounded-full object-cover"
+                            />
+
                         </div>
                         <span className="truncate text-sm">{content.author}</span>
                     </div>
