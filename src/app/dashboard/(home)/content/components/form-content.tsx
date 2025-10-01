@@ -4,13 +4,13 @@ import { FC, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createContent, updateContent, uploadImage } from "../lib/action"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { SubmitButton } from "../../components/submit-button"
 import { handleAxiosError } from "@/lib/error"
 import { Content } from "@/model/Content"
 import { Category } from "@/model/Category"
+import { RichTextEditor } from "@/components/rich-text-editor"
 
 interface FormContentProps {
     type?: "ADD" | "EDIT"
@@ -77,8 +77,6 @@ const FormContentPage: FC<FormContentProps> = ({ type = "ADD", defaultValue, cat
             setLoading(false)
         }
     }
-
-
 
     return (
         <form onSubmit={handleContent} className="space-y-6 w-full">
@@ -147,14 +145,11 @@ const FormContentPage: FC<FormContentProps> = ({ type = "ADD", defaultValue, cat
 
             <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Description</label>
-                <Textarea
-                    placeholder="Full description..."
+                <RichTextEditor
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-[150px]"
+                    onChange={setDescription}
                 />
             </div>
-
             <SubmitButton loading={loading} type={type} />
         </form>
     )
