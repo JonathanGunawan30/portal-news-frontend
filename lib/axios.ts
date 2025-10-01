@@ -8,3 +8,13 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 export default axiosInstance;
+
+export const createServerAxiosInstance = (cookieHeader: string): AxiosInstance => {
+    return axios.create({
+        baseURL: baseUrl,
+        headers: {
+            Cookie: cookieHeader,
+        },
+        withCredentials: false,
+    });
+};
