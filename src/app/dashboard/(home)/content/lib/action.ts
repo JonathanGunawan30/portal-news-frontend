@@ -1,6 +1,7 @@
 import axiosInstance from "@lib/axios";
 import { Category } from "@/model/Category";
 import { Content } from "@/model/Content";
+import { cookies } from "next/headers";
 
 /**
  * CREATE content
