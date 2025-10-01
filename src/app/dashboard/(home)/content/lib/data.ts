@@ -6,22 +6,26 @@ import { cookies } from "next/headers";
  * GET content by id (For SERVER-SIDE fetching)
  */
 export const getContentById = async (id: number): Promise<Content> => {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
+    const cookieHeader = cookieStore.toString();
 
-    const token = cookieStore.get('X-API-TOKEN')?.value;
-
-    if (!token) {
+    if (!cookieHeader) {
         throw new Error("Unauthorized: No session cookie found");
     }
 
     try {
         const res = await axiosInstance.get(`/admin/contents/${id}`, {
             headers: {
-                'Cookie': `X-API-TOKEN=${token}`
-            }
+                Cookie: cookieHeader,
+            },
+            withCredentials: true,
         });
+
         return res.data.data;
     } catch (err) {
+        if (err.response?.status === 401) {
+            throw new Error("Unauthorized");
+        }
         throw err;
     }
 };
