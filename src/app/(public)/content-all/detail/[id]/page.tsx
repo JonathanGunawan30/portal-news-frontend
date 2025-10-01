@@ -89,9 +89,14 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                             </Link>
                         </div>
                     </div>
-                    <h1 className="text-brand-primary mb-3 mt-2 text-center text-3xl font-semibold tracking-tight lg:text-4xl lg:leading-snug">
+                    <h1 className="text-brand-primary mb-2 mt-2 text-center text-3xl font-semibold tracking-tight lg:text-4xl lg:leading-snug">
                         {content.title}
                     </h1>
+                    {content.excerpt && (
+                        <p className="text-center text-gray-600 max-w-2xl mx-auto text-base lg:text-lg">
+                            {content.excerpt}
+                        </p>
+                    )}
                 </div>
 
                 <div className="mt-3 flex justify-center space-x-3 text-gray-500">
@@ -130,6 +135,20 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                         className="prose mx-auto my-3"
                         dangerouslySetInnerHTML={{ __html: content.description }}
                     />
+                    {/* Tags */}
+                    {content.tags && (
+                        <div className="mt-8 mb-3 flex flex-wrap items-center gap-2">
+                            {content.tags.split(',').map((tag) => {
+                                const t = tag.trim();
+                                if (!t) return null;
+                                return (
+                                    <span key={t} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                                        #{t}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="mb-7 mt-7 flex justify-center">
                         <Link href={`/content-all`} className="bg-brand-secondary/20 rounded-full px-5 py-2 text-sm text-blue-600">
                             View All Contents

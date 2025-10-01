@@ -63,6 +63,20 @@ export function FeaturedPostCard({ content }: PostCardProps) {
                         {format(new Date(content.created_at), "MMMM d, y", { locale: enUS })}
                     </time>
                 </div>
+                {content.excerpt && (
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">{content.excerpt}</p>
+                )}
+                {content.tags && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {content.tags.split(',').map(tag => {
+                            const t = tag.trim();
+                            if (!t) return null;
+                            return (
+                                <span key={t} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium text-blue-700">#{t}</span>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );
