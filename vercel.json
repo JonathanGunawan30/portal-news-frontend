@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://portal-news-api-proxy.jgunawan3005.workers.dev/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://portal-news-api-proxy.jgunawan3005.workers.dev/api/$1"
     }
   ]
 }
