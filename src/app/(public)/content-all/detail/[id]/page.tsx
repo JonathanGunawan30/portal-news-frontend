@@ -136,19 +136,22 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                         dangerouslySetInnerHTML={{ __html: content.description }}
                     />
                     {/* Tags */}
-                    {content.tags && (
-                        <div className="mt-8 mb-3 flex flex-wrap items-center gap-2">
-                            {content.tags.split(',').map((tag) => {
-                                const t = tag.trim();
-                                if (!t) return null;
-                                return (
-                                    <span key={t} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-                                        #{t}
-                                    </span>
-                                );
-                            })}
-                        </div>
-                    )}
+                    {(() => {
+                        const tagList = Array.isArray(content.tags)
+                            ? content.tags
+                            : typeof content.tags === 'string'
+                                ? content.tags.split(',')
+                                : [];
+                        const cleaned = tagList.map((t) => String(t).trim()).filter(Boolean);
+                        if (cleaned.length === 0) return null;
+                        return (
+                            <div className="mt-8 mb-3 flex flex-wrap items-center gap-2">
+                                {cleaned.map((t) => (
+                                    <span key={t} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">#{t}</span>
+                                ))}
+                            </div>
+                        );
+                    })()}
                     <div className="mb-7 mt-7 flex justify-center">
                         <Link href={`/content-all`} className="bg-brand-secondary/20 rounded-full px-5 py-2 text-sm text-blue-600">
                             View All Contents

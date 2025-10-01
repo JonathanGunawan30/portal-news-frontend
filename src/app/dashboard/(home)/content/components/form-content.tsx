@@ -23,7 +23,7 @@ const FormContentPage: FC<FormContentProps> = ({ type = "ADD", defaultValue, cat
     const [title, setTitle] = useState(defaultValue?.title ?? "")
     const [excerpt, setExcerpt] = useState(defaultValue?.excerpt ?? "")
     const [description, setDescription] = useState(defaultValue?.description ?? "")
-    const [tags, setTags] = useState(defaultValue?.tags ?? "")
+    const [tags, setTags] = useState<string>(Array.isArray(defaultValue?.tags) ? (defaultValue?.tags as string[]).join(', ') : (defaultValue?.tags ?? ""))
     const [status, setStatus] = useState(defaultValue?.status ?? "DRAFT")
     const [categoryId, setCategoryId] = useState<number | null>(defaultValue?.category_id ?? null)
     const [imageFile, setImageFile] = useState<File | null>(null)

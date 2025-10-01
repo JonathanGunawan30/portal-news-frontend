@@ -4,7 +4,7 @@ export interface Content {
     description: string;
     excerpt: string;
     image: string;
-    tags: string;
+    tags: string | string[] | null;
     status: string;
     created_at: string;
     author: string;
