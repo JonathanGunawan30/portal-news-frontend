@@ -53,16 +53,16 @@ export const uploadImage = async (file: File): Promise<{ url: string }> => {
 
     try {
         const res = await axiosInstance.post("/admin/contents/upload-image", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
             withCredentials: true,
         });
+
         return { url: res.data.data.url_image };
     } catch (err) {
+        console.error("Upload error:", err);
         throw err;
     }
 };
+
 
 /**
  * GET content by id
