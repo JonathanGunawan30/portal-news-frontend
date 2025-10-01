@@ -6,7 +6,8 @@ import { cookies } from "next/headers";
  * GET content by id (For SERVER-SIDE fetching)
  */
 export const getContentById = async (id: number): Promise<Content> => {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
+
     const token = cookieStore.get('X-API-TOKEN')?.value;
 
     if (!token) {
