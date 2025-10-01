@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
-import { getContentById, getAllCategories } from "../../lib/action"
+import {getAllCategories } from "../../lib/action"
+import { getContentById } from "../../lib/data"
 import FormContentPage from "@/app/dashboard/(home)/content/components/form-content"
 
 interface EditContentPageProps {

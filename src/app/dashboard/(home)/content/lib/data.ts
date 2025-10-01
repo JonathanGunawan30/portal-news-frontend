@@ -1,4 +1,4 @@
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "../../../../../lib/axios";
 import { Content } from "@/model/Content";
 import { cookies } from "next/headers";
 
