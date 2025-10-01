@@ -1,12 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://portal-news-api.jonathangunawan.com/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
+      "source": "/api/:path*",
+      "destination": "https://portal-news-api-proxy.jgunawan3005.workers.dev/:path*"
     }
   ]
 }
