@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { getAllCategories } from "../../lib/action"
+import { getAllCategories } from "../../lib/category"
 import { getContentById } from "../../lib/data"
 import FormContentPage from "@/app/dashboard/(home)/content/components/form-content"
 

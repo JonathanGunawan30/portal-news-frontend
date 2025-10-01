@@ -4,9 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 
 const Toolbar = ({ editor }: { editor: any }) => {
-    if (!editor) {
-        return null
-    }
+    if (!editor) return null
 
     return (
         <div className="border border-input bg-transparent rounded-t-md p-2 flex items-center gap-2">
@@ -35,22 +33,31 @@ const Toolbar = ({ editor }: { editor: any }) => {
     )
 }
 
-export const RichTextEditor = ({ value, onChange }: { value: string, onChange: (value: string) => void }) => {
+export const RichTextEditor = ({
+                                   value,
+                                   onChange,
+                               }: {
+    value: string
+    onChange: (value: string) => void
+}) => {
     const editor = useEditor({
         extensions: [
-            StarterKit.configure({
-            }),
+            StarterKit.configure({}),
         ],
         content: value,
+        immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: 'prose dark:prose-invert min-h-[150px] w-full rounded-b-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                class:
+                    'prose dark:prose-invert min-h-[150px] w-full rounded-b-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
             },
         },
-        onUpdate({ editor }) {
+        onUpdate: ({ editor }) => {
             onChange(editor.getHTML())
         },
     })
+
+    if (!editor) return null
 
     return (
         <div>
