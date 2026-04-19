@@ -11,19 +11,24 @@ import {format} from "date-fns";
 import {enUS} from "date-fns/locale";
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight} from "lucide-react";
+import {ContentCardSkeleton} from "@/components/content-card-skeleton";
 
 export default function ContentAll() {
     const [contents, setContents] = useState<Content[]>([])
     const [pagination, setPagination] = useState<Pagination | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchContents = async (page: number = 1) => {
+        setIsLoading(true)
         try {
             const res = await axiosInstance.get<ApiResponse<Content[]>>(`/fe/contents?limit=9&page=${page}`)
             setContents(res.data.data)
             setPagination(res.data.pagination ?? null)
         } catch (err){
             toast.error("Failed to fetch contents")
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -56,74 +61,80 @@ export default function ContentAll() {
                     <p className="mt-2 text-lg">View All Contents</p>
                 </div>
                 <div className="mt-10 grid gap-10 md:grid-cols-2 lg:gap-10 xl:grid-cols-3">
-                    {contents.map((content) => (
-                        <div key={content.id} className="group cursor-pointer">
-                            <div className="overflow-hidden rounded-md bg-gray-100 transition-all hover:scale-105">
-                                <Link className="relative block aspect-ratio" href={`/content-all/detail/${content.id}`}>
-                                    {content.image != "" && (
-                                        <div className="relative aspect-video">
-                                            <Image
-                                                src={content.image}
-                                                alt={content.title}
-                                                fill
-                                                className="object-cover"
-                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            />
-                                        </div>
+                    {isLoading ? (
+                        Array.from({ length: 9 }).map((_, index) => (
+                            <ContentCardSkeleton key={index} />
+                        ))
+                    ) : (
+                        contents.map((content) => (
+                            <div key={content.id} className="group cursor-pointer">
+                                <div className="overflow-hidden rounded-md bg-gray-100 transition-all hover:scale-105">
+                                    <Link className="relative block aspect-ratio" href={`/content-all/detail/${content.id}`}>
+                                        {content.image != "" && (
+                                            <div className="relative aspect-video">
+                                                <Image
+                                                    src={content.image}
+                                                    alt={content.title}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
+                                            </div>
 
-                                    )}
-                                    {content.image == "" && (
-                                        <div className="relative aspect-video">
-                                            <Image
-                                                src="/img/content-not-found.png"
-                                                alt={content.title}
-                                                fill
-                                                className="object-cover transition-all"
-                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            />
-                                        </div>
-                                    )}
+                                        )}
+                                        {content.image == "" && (
+                                            <div className="relative aspect-video">
+                                                <Image
+                                                    src="/img/content-not-found.png"
+                                                    alt={content.title}
+                                                    fill
+                                                    className="object-cover transition-all"
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
+                                            </div>
+                                        )}
 
-                                </Link>
-                            </div>
-                            <div>
-                                <div className="flex gap-3">
-                                    <Link href={`/category/${content.category_id}`}>
+                                    </Link>
+                                </div>
+                                <div>
+                                    <div className="flex gap-3">
+                                        <Link href={`/category/${content.category_id}`}>
                                         <span className="inline-block text-sm font-medium tracking-wider uppercase mt-5 text-blue-600">
                                             {content.category_name}
                                         </span>
-                                    </Link>
-                                </div>
-                                <h2 className="text-lg font-semibold leading-snug tracking-tight mt-2">
-                                    <Link href={`/content-all/detail/${content.id}`}>
+                                        </Link>
+                                    </div>
+                                    <h2 className="text-lg font-semibold leading-snug tracking-tight mt-2">
+                                        <Link href={`/content-all/detail/${content.id}`}>
                                         <span className="bg-gradient-to-r from-green-200 to-green-100 bg-left-center bg-no-repeat transition-all duration-300 bg-[length:0%_70%] hover:bg-[length:100%_70%]">
                                             {content.title}
                                         </span>
-                                    </Link>
-                                </h2>
-                                <div className="mt-3 flex items-center space-x-3 text-gray-500">
-                                    <Link href={""}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="relative h-5 w-5 flex-shrink-0">
-                                                <Image
-                                                    src="/img/admin.png"
-                                                    alt="author"
-                                                    width={20}
-                                                    height={20}
-                                                    className="rounded-full object-cover"
-                                                />
-                                            </div>
-                                            <span className="truncate text-sm">
+                                        </Link>
+                                    </h2>
+                                    <div className="mt-3 flex items-center space-x-3 text-gray-500">
+                                        <Link href={""}>
+                                            <div className="flex items-center gap-3">
+                                                <div className="relative h-5 w-5 flex-shrink-0">
+                                                    <Image
+                                                        src="/img/admin.png"
+                                                        alt="author"
+                                                        width={20}
+                                                        height={20}
+                                                        className="rounded-full object-cover"
+                                                    />
+                                                </div>
+                                                <span className="truncate text-sm">
                                             {content.author}
                                         </span>
-                                        </div>
-                                    </Link>
-                                    <span className="text-xs text-gray-300">•</span>
-                                    <time dateTime={content.created_at} className="truncate text-sm">{format(new Date(content.created_at), 'MMMM d, y', {locale: enUS})}</time>
+                                            </div>
+                                        </Link>
+                                        <span className="text-xs text-gray-300">•</span>
+                                        <time dateTime={content.created_at} className="truncate text-sm">{format(new Date(content.created_at), 'MMMM d, y', {locale: enUS})}</time>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
                 {pagination && (
                     <div className="flex justify-center items-center mt-10">
