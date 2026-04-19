@@ -1,6 +1,6 @@
 # Jonathan News Portal — Frontend
 
-A modern, high-performance news portal frontend built with **Next.js 15 (App Router)**, **TypeScript**, and **Tailwind CSS v4**. This application provides a seamless reading experience for users and a robust dashboard for administrators to manage categories and content.
+A modern, high-performance news portal frontend built with **Next.js 16 (App Router)**, **TypeScript**, and **Tailwind CSS v4**. This application provides a seamless reading experience for users and a robust dashboard for administrators to manage categories and content.
 
 ---
 
