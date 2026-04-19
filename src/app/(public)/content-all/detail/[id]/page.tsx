@@ -10,7 +10,7 @@ import { Content } from "@/model/Content";
 import { ApiResponse } from "@/model/ApiResponse";
 
 interface ContentDetailPageProps {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }
 
 async function getContentDetail(id: string): Promise<Content | null> {
@@ -31,7 +31,7 @@ export async function generateMetadata(
     { params }: ContentDetailPageProps,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const id = params.id;
+    const { id } = await params;
     const content = await getContentDetail(id);
 
     if (!content) {
@@ -69,7 +69,7 @@ export async function generateMetadata(
 }
 
 export default async function ContentDetail({ params }: ContentDetailPageProps) {
-    const contentId = params.id;
+    const { id: contentId } = await params;
     const content = await getContentDetail(contentId);
 
     if (!content) {
