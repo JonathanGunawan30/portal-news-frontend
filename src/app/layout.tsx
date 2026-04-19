@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { GoogleAnalytics } from "@/components/google-analytics"
+import { CookieConsent } from "@/components/CookieConsent"
 import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -10,17 +11,17 @@ export const metadata: Metadata = {
     metadataBase: new URL('https://blog.jonathangunawan.com'),
 
     title: {
-        default: "Jonathan's News Portal | Daily Tech & Business News",
-        template: "%s | Jonathan's News Portal",
+        default: "Jonathan News Portal | Daily Tech & Business News",
+        template: "%s | Jonathan News Portal",
     },
 
-    description: "The latest news portal covering technology, business, gaming, and lifestyle, keeping you updated with trusted information.",
+    description: "Stay updated with the latest technology, business, and gaming news. Jonathan News Portal delivers trusted, in-depth coverage for curious minds.",
 
     openGraph: {
-        title: "Jonathan's News Portal",
-        description: "The latest news portal covering technology, business, gaming, and lifestyle.",
+        title: "Jonathan News Portal",
+        description: "Your go-to source for tech, business, and gaming news — updated daily.",
         url: 'https://blog.jonathangunawan.com',
-        siteName: "Jonathan's News Portal",
+        siteName: "Jonathan News Portal",
         images: [
             {
                 url: '/og-image.png',
@@ -30,6 +31,12 @@ export const metadata: Metadata = {
         ],
         locale: 'en_US',
         type: 'website',
+    },
+
+    keywords: ["technology news", "business news", "gaming news", "Jonathan News Portal"],
+
+    alternates: {
+        canonical: 'https://blog.jonathangunawan.com',
     },
 
     robots: {
@@ -46,8 +53,8 @@ export const metadata: Metadata = {
 
     twitter: {
         card: 'summary_large_image',
-        title: "Jonathan's News Portal",
-        description: "The latest news portal covering technology, business, gaming, and lifestyle.",
+        title: "Jonathan News Portal",
+        description: "Your go-to source for tech, business, and gaming news — updated daily.",
         images: ['/og-image.png'],
     },
 }
@@ -62,6 +69,7 @@ export default function RootLayout({
                     <GoogleAnalytics />
                 </Suspense>
                 {children}
+                <CookieConsent />
             </body>
         </html>
     )

@@ -76,9 +76,18 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
         notFound();
     }
 
+    const formattedDescription = content.description
+        ? (/<[a-z][\s\S]*>/i.test(content.description)
+            ? content.description
+            : content.description
+                .split(/\r?\n\r?\n+/)
+                .map(para => `<p>${para.replace(/\r?\n/g, '<br>')}</p>`)
+                .join(''))
+        : "";
+
     return (
         <div>
-            <div className="container px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
+            <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
                 <div className="mx-auto max-w-screen-md">
                     <div className="flex justify-center">
                         <div className="flex gap-3">
@@ -89,7 +98,7 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                             </Link>
                         </div>
                     </div>
-                    <h1 className="text-brand-primary mb-2 mt-2 text-center text-3xl font-semibold tracking-tight lg:text-4xl lg:leading-snug">
+                    <h1 className="text-brand-primary mb-2 mt-2 text-center text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl lg:leading-snug">
                         {content.title}
                     </h1>
                     {content.excerpt && (
@@ -129,13 +138,12 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                 )}
             </div>
 
-            <div className="container px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
+            <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
                 <article className="mx-auto max-w-screen-md">
                     <div
-                        className="prose mx-auto my-3"
-                        dangerouslySetInnerHTML={{ __html: content.description }}
+                        className="prose prose-lg mx-auto my-3 prose-p:text-justify"
+                        dangerouslySetInnerHTML={{ __html: formattedDescription }}
                     />
-                    {/* Tags */}
                     {(() => {
                         const tagList = Array.isArray(content.tags)
                             ? content.tags

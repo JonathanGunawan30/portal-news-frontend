@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Dashboard | Portal News",
         description: "Admin dashboard for managing Portal News content.",
-        url: "https://myapp.com/dashboard",
+        url: "https://blog.jonathangunawan.com/dashboard",
         siteName: "Portal News",
         images: [
             {
@@ -51,7 +51,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         Manage your content
                     </div>
                 </div>
-                {/* Mobile quick nav */}
                 <div className="mt-3 md:hidden -mx-5 px-5 overflow-x-auto">
                     <div className="flex gap-2">
                         <Link href="/dashboard" className="whitespace-nowrap rounded-full border px-3 py-1 text-sm">Dashboard</Link>
@@ -63,7 +62,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </nav>
 
             <section className="flex md:flex-row flex-col gap-5 items-start md:items-stretch">
-                {/* Sidebar for md+ */}
                 <aside className="hidden md:block md:sticky md:top-[68px] md:h-[calc(100dvh-68px)] md:w-64 shrink-0 border-r p-4 space-y-5">
                     <div className="space-y-2">
                         <Button variant="ghost" asChild className="w-full justify-start">
