@@ -10,7 +10,8 @@ interface EditContentPageProps {
 }
 
 export default async function EditContentPage({ params }: EditContentPageProps) {
-    const id = Number(params.id)
+    const { id: rawId } = await params
+    const id = Number(rawId)
 
     console.log("[DEBUG] Raw params.id:", params.id)
     console.log("[DEBUG] Parsed id:", id)
