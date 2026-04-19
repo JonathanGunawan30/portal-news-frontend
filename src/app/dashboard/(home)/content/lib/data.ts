@@ -4,23 +4,16 @@ import { cookies } from "next/headers";
 import axios from "axios";
 
 export const getContentById = async (id: number): Promise<Content> => {
-    const cookieStore = cookies();
-    const cookieHeader = cookieStore.toString();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("X-API-TOKEN")?.value ?? "";
+    const cookieHeader = `X-API-TOKEN=${token}`;
 
-    console.log("=== DEBUG GET CONTENT BY ID ===");
-    console.log("Content ID:", id);
-    console.log("Cookie Header:", cookieHeader ? "EXISTS" : "MISSING");
-    console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-    console.log("Full URL:", `${process.env.NEXT_PUBLIC_API_URL}/admin/contents/${id}`);
-
-
-    if (!cookieHeader) {
+    if (!token) {
         throw new Error("Unauthorized: No session cookie found");
     }
 
     try {
         const serverAxios = createServerAxiosInstance(cookieHeader);
-
         const res = await serverAxios.get(`/admin/contents/${id}`);
         return res.data.data;
     } catch (err: unknown) {
