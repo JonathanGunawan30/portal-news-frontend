@@ -44,7 +44,7 @@ export default function Home() {
             </div>
 
             <div>
-                <h2 className="text-2xl font-bold mb-8">More Posts</h2>
+                <h2 className="text-2xl font-bold mb-8 hidden md:block">More Posts</h2>
                 <div className="grid gap-10 md:grid-cols-2 lg:gap-10 xl:grid-cols-3">
                     {contents.map((content) => (
                         <PostCard key={content.id} content={content} />

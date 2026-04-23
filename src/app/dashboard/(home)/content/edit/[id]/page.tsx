@@ -4,16 +4,15 @@ import { getContentById } from "../../lib/data"
 import FormContentPage from "@/app/dashboard/(home)/content/components/form-content"
 
 interface EditContentPageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
 export default async function EditContentPage({ params }: EditContentPageProps) {
     const { id: rawId } = await params
     const id = Number(rawId)
 
-    console.log("[DEBUG] Raw params.id:", params.id)
     console.log("[DEBUG] Parsed id:", id)
 
     if (isNaN(id)) {

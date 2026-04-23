@@ -98,11 +98,11 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                             </Link>
                         </div>
                     </div>
-                    <h1 className="text-brand-primary mb-2 mt-2 text-center text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl lg:leading-snug">
+                    <h1 className="text-brand-primary mb-2 mt-2 text-center text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl lg:leading-snug break-words">
                         {content.title}
                     </h1>
                     {content.excerpt && (
-                        <p className="text-center text-gray-600 max-w-2xl mx-auto text-base lg:text-lg">
+                        <p className="text-center text-gray-600 max-w-2xl mx-auto text-base lg:text-lg break-words">
                             {content.excerpt}
                         </p>
                     )}
@@ -139,9 +139,9 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
             </div>
 
             <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
-                <article className="mx-auto max-w-screen-md">
+                <article className="mx-auto max-w-screen-md break-words">
                     <div
-                        className="prose prose-lg mx-auto my-3 prose-p:text-justify"
+                        className="prose prose-lg mx-auto my-3 prose-p:text-justify break-words"
                         dangerouslySetInnerHTML={{ __html: formattedDescription }}
                     />
                     {(() => {
