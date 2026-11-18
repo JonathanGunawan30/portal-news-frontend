@@ -1,28 +1,22 @@
 "use client"
 
-import {useEffect, useState} from "react";
-import {Category} from "@/model/Category";
-import axiosInstance from "@lib/axios";
-import {ApiResponse} from "@/model/ApiResponse";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import FormContentPage from "@/app/dashboard/(home)/content/components/form-content";
-import {toast} from "sonner";
+import { getAllCategories } from "@/app/dashboard/(home)/content/lib/action";
+import { toast } from "sonner";
 
 const CreateContentPage = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await axiosInstance.get<ApiResponse<Category[]>>("/admin/categories", {
-                    withCredentials: true,
-                })
-                setCategories(res.data.data)
-            } catch (err){
-                toast.error("Failed to fetch categories")
-            }
-        }
+    const { data: categories = [], isError } = useQuery({
+        queryKey: ["admin", "categories"],
+        queryFn: getAllCategories,
+    });
 
-        fetchCategories();
-    }, []);
+    useEffect(() => {
+        if (isError) {
+            toast.error("Failed to fetch categories");
+        }
+    }, [isError]);
 
     return (
         <div>
@@ -31,7 +25,7 @@ const CreateContentPage = () => {
             </div>
             <FormContentPage type="ADD" categoryList={categories} />
         </div>
-    )
-}
+    );
+};
 
-export default CreateContentPage
+export default CreateContentPage;

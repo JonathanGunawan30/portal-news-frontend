@@ -1,46 +1,36 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import axiosInstance from "@lib/axios"
-import { Category } from "@/model/Category"
+import { useEffect } from "react"
+import { useParams } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import FormCategoryPage from "@/app/dashboard/(home)/category/components/form-category"
 import { toast } from "sonner"
+import { getAdminCategoryById } from "@/app/dashboard/(home)/category/lib/action"
 
 export default function EditCategoryPage() {
     const params = useParams()
-    const router = useRouter()
-    const [category, setCategory] = useState<Category | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const categoryId = String(params.id ?? "")
+
+    const { data: category, isLoading, error } = useQuery({
+        queryKey: ["admin", "categories", categoryId],
+        queryFn: () => getAdminCategoryById(categoryId),
+        enabled: Boolean(categoryId),
+    })
 
     useEffect(() => {
-        const fetchCategory = async () => {
-            try {
-                setLoading(true)
-                const res = await axiosInstance.get(`/admin/categories/${params.id}`, {
-                    withCredentials: true,
-                })
-                setCategory(res.data.data)
-            } catch (err: any) {
-                setError(err.response?.data?.message || "Error fetching category")
-                toast.error("Failed to fetch category")
-            } finally {
-                setLoading(false)
-            }
+        if (error) {
+            toast.error("Failed to fetch category")
         }
+    }, [error])
 
-        if (params.id) fetchCategory()
-    }, [params.id])
-
-    if (loading) {
+    if (isLoading) {
         return <div className="p-10 text-center text-muted-foreground">Loading…</div>
     }
 
     if (error) {
         return (
             <div className="p-10 text-center text-red-500">
-                {error}
+                {error instanceof Error ? error.message : "Error fetching category"}
             </div>
         )
     }
