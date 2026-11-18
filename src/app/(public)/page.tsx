@@ -1,39 +1,37 @@
 "use client"
 
-import {useEffect, useState} from "react";
-import {Content} from "@/model/Content";
-import axiosInstance from "@lib/axios";
-import {ApiResponse} from "@/model/ApiResponse";
-import {toast} from "sonner";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Content } from "@/model/Content";
+import { apiFetch } from "@/lib/api";
+import { ApiResponse } from "@/model/ApiResponse";
+import { toast } from "sonner";
 import Link from "next/link";
 import { HomeSkeleton } from "@/components/home-skeleton";
 import { FeaturedPostCard } from "@/components/featured-post-card";
 import { PostCard } from "@/components/post-card";
 
 export default function Home() {
-    const [contents, setContents] = useState<Content[]>([]);
-    const [sliceData, setSliceData] = useState<Content[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: allData = [], isLoading, isError } = useQuery({
+        queryKey: ["fe", "contents", "home"],
+        queryFn: async () => {
+            const res = await apiFetch<ApiResponse<Content[]>>("/fe/contents?limit=8");
+            return res.data;
+        },
+    });
 
     useEffect(() => {
-        const fetchContents = async () => {
-            try {
-                const res = await axiosInstance.get<ApiResponse<Content[]>>("/fe/contents?limit=8");
-                const allData = res.data.data;
-                setSliceData(allData.slice(0, 2));
-                setContents(allData.slice(2));
-            } catch (err){
-                toast.error("Failed to fetch contents");
-            } finally {
-                setIsLoading(false);
-            }
+        if (isError) {
+            toast.error("Failed to fetch contents");
         }
-        fetchContents().then(r => console.info("Contents fetched successfully"));
-    }, [])
+    }, [isError]);
 
     if (isLoading) {
         return <HomeSkeleton />;
     }
+
+    const sliceData = allData.slice(0, 2);
+    const contents = allData.slice(2);
 
     return (
         <div className="space-y-16">

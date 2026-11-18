@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { formSchema } from "@/app/(auth)/login/form/validation";
-import axiosInstance from "@lib/axios";
+import { apiFetch, ApiError } from "@/lib/api";
 import { toast } from "sonner";
 import Image from "next/image";
 import { Eye, EyeOff, Lock, Mail, Loader2 } from "lucide-react";
@@ -35,31 +36,16 @@ export default function FormSignIn() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-
-        const validation = formSchema.safeParse({ email, password });
-        if (!validation.success) {
-            validation.error.issues.forEach((issue) => {
-                toast.warning(issue.message);
-            });
-            setLoading(false);
-            return;
-        }
-
-        try {
-            // Execute reCAPTCHA Enterprise to get a token
+    const loginMutation = useMutation({
+        mutationFn: async (payload: { email: string; password: string }) => {
             const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-            
+
             if (!siteKey) {
                 console.error("reCAPTCHA site key is missing");
                 throw new Error("Configuration error");
             }
 
-            // Ensure grecaptcha is ready before executing (with 10s timeout)
             await new Promise<void>((resolve, reject) => {
                 if (window.grecaptcha?.enterprise) {
                     window.grecaptcha.enterprise.ready(() => resolve());
@@ -81,7 +67,7 @@ export default function FormSignIn() {
 
             const recaptchaToken = await window.grecaptcha.enterprise.execute(
                 siteKey,
-                { action: 'LOGIN' }
+                { action: "LOGIN" }
             );
 
             if (!recaptchaToken) {
@@ -89,23 +75,41 @@ export default function FormSignIn() {
                 throw new Error("Security verification failed");
             }
 
-            await axiosInstance.post("/login", {
-                email,
-                password,
-                recaptcha_token: recaptchaToken
-            }, { withCredentials: true })
+            return apiFetch("/login", {
+                method: "POST",
+                body: JSON.stringify({
+                    email: payload.email,
+                    password: payload.password,
+                    recaptcha_token: recaptchaToken,
+                }),
+            });
+        },
+        onSuccess: () => {
             toast.success("Welcome back! Login successful.");
             router.push("/dashboard");
-        } catch (err: any) {
-            setPassword("")
-            if (err?.response) {
-                toast.error("Invalid email or password. Please try again.")
+        },
+        onError: (err) => {
+            setPassword("");
+            if (err instanceof ApiError) {
+                toast.error("Invalid email or password. Please try again.");
             } else {
-                toast.error(err?.message || "Unable to sign in. Please try again.")
+                toast.error(err instanceof Error ? err.message : "Unable to sign in. Please try again.");
             }
-        } finally {
-            setLoading(false)
+        },
+    });
+
+    const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const validation = formSchema.safeParse({ email, password });
+        if (!validation.success) {
+            validation.error.issues.forEach((issue) => {
+                toast.warning(issue.message);
+            });
+            return;
         }
+
+        loginMutation.mutate({ email, password });
     };
 
     return (
@@ -182,7 +186,7 @@ export default function FormSignIn() {
                     </div>
 
                     <div className="pt-2">
-                        <SubmitButton loading={loading} />
+                        <SubmitButton loading={loginMutation.isPending} />
                     </div>
                 </form>
 

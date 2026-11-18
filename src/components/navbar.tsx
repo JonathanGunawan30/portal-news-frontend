@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Category } from "@/model/Category";
-import axiosInstance from "@lib/axios";
+import { apiFetch } from "@/lib/api";
 import { ApiResponse } from "@/model/ApiResponse";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -13,22 +14,22 @@ import { Button } from "@/components/ui/button";
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [categoryOpen, setCategoryOpen] = useState(false);
-    const [categories, setCategories] = useState<Category[]>([]);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const id = useId();
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await axiosInstance.get<ApiResponse<Category[]>>("/fe/categories");
-                setCategories(res.data.data);
-            } catch {
-                toast.error("Failed to fetch categories");
-            }
-        };
+    const { data: categories = [], isError } = useQuery({
+        queryKey: ["fe", "categories"],
+        queryFn: async () => {
+            const res = await apiFetch<ApiResponse<Category[]>>("/fe/categories");
+            return res.data;
+        },
+    });
 
-        fetchCategories();
-    }, []);
+    useEffect(() => {
+        if (isError) {
+            toast.error("Failed to fetch categories");
+        }
+    }, [isError]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
