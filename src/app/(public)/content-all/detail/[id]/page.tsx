@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { notFound } from "next/navigation";
 import type { Metadata, ResolvingMetadata } from 'next';
+import sanitizeHtml from "sanitize-html";
 
 import { Content } from "@/model/Content";
 import { ApiResponse } from "@/model/ApiResponse";
@@ -76,7 +77,7 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
         notFound();
     }
 
-    const formattedDescription = content.description
+    const rawDescription = content.description
         ? (/<[a-z][\s\S]*>/i.test(content.description)
             ? content.description
             : content.description
@@ -84,6 +85,15 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                 .map(para => `<p>${para.replace(/\r?\n/g, '<br>')}</p>`)
                 .join(''))
         : "";
+
+    const formattedDescription = sanitizeHtml(rawDescription, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "s", "del"]),
+        allowedAttributes: {
+            ...sanitizeHtml.defaults.allowedAttributes,
+            img: ["src", "alt", "title", "width", "height"],
+        },
+        allowedSchemes: ["http", "https", "mailto"],
+    });
 
     return (
         <div>
@@ -111,7 +121,7 @@ export default async function ContentDetail({ params }: ContentDetailPageProps) 
                 <div className="mt-3 flex justify-center space-x-3 text-gray-500">
                     <div className="flex items-center gap-3">
                         <div className="relative h-8 w-8 flex-shrink-0">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7xmT7OxoAs2AfeX3RWF_RDlUMevO2VDG31w&s" alt="author" className="rounded-full object-cover"/>
+                            <Image src="/img/admin.png" alt="author" width={32} height={32} className="rounded-full object-cover" />
                         </div>
                         <div>
                             <p className="text-gray-800 text-sm font-medium">{content.author}</p>
