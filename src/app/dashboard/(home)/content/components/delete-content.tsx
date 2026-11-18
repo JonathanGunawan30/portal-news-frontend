@@ -1,11 +1,12 @@
 "use client"
 
 import { FC } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Trash } from "lucide-react"
 import { toast } from "sonner"
 import { deleteContent } from "../lib/action"
-import {ConfirmDialog} from "@/components/ui/ConfirmDialog"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 
 interface DeleteContentProps {
     id: number
@@ -13,15 +14,22 @@ interface DeleteContentProps {
 }
 
 const DeleteContent: FC<DeleteContentProps> = ({ id, onDelete }) => {
-    const handleDelete = async () => {
-        try {
-            await deleteContent(id)
+    const queryClient = useQueryClient()
+
+    const deleteMutation = useMutation({
+        mutationFn: () => deleteContent(id),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "contents"] }),
+                queryClient.invalidateQueries({ queryKey: ["fe", "contents"] }),
+            ])
             toast.success("Content deleted successfully!")
             onDelete(id)
-        } catch {
+        },
+        onError: () => {
             toast.error("Failed to delete content.")
-        }
-    }
+        },
+    })
 
     return (
         <ConfirmDialog
@@ -35,7 +43,7 @@ const DeleteContent: FC<DeleteContentProps> = ({ id, onDelete }) => {
             description="This action cannot be undone. The content will be permanently deleted from the system."
             confirmText="Yes, Delete"
             cancelText="Cancel"
-            onConfirm={handleDelete}
+            onConfirm={() => deleteMutation.mutate()}
         />
     )
 }

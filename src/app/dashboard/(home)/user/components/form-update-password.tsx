@@ -1,38 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { handleAxiosError } from "@/lib/error";
+import { handleApiError } from "@/lib/error";
 import { getUserProfile, updatePassword } from "../lib/action";
-import type { User } from "@/model/User";
 
 export function UpdatePasswordForm() {
-    const [profile, setProfile] = useState<User | null>(null);
-
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    const [initialLoading, setInitialLoading] = useState(true);
-    const [passwordLoading, setPasswordLoading] = useState(false);
+    const { data: profile, isLoading: initialLoading, isError } = useQuery({
+        queryKey: ["admin", "user", "profile"],
+        queryFn: () => getUserProfile(),
+    });
 
     useEffect(() => {
-        async function fetchProfile() {
-            try {
-                const userProfile = await getUserProfile();
-                setProfile(userProfile);
-            } catch (error) {
-                toast.error("Failed to load profile data.");
-                console.error(error);
-            } finally {
-                setInitialLoading(false);
-            }
+        if (isError) {
+            toast.error("Failed to load profile data.");
         }
-        fetchProfile();
-    }, []);
+    }, [isError]);
 
-    const handleUpdatePassword = async (e: React.FormEvent) => {
+    const passwordMutation = useMutation({
+        mutationFn: async () => {
+            const result = await updatePassword({
+                current_password: currentPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword,
+            });
+            if (!result.ok) {
+                throw new Error(result.message || "Failed to update password.");
+            }
+            return result;
+        },
+        onSuccess: () => {
+            toast.success("Password updated successfully!");
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        },
+        onError: (err) => {
+            handleApiError(err);
+        },
+    });
+
+    const handleUpdatePassword = (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
             toast.error("New password and confirmation do not match.");
@@ -43,26 +57,7 @@ export function UpdatePasswordForm() {
             return;
         }
 
-        setPasswordLoading(true);
-        try {
-            const result = await updatePassword({
-                current_password: currentPassword,
-                new_password: newPassword,
-                confirm_password: confirmPassword,
-            });
-            if (!result.ok) {
-                toast.error(result.message || "Failed to update password.");
-                return;
-            }
-            toast.success("Password updated successfully!");
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-        } catch (err) {
-            handleAxiosError(err);
-        } finally {
-            setPasswordLoading(false);
-        }
+        passwordMutation.mutate();
     };
 
     if (initialLoading) {
@@ -103,8 +98,8 @@ export function UpdatePasswordForm() {
                     <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
                     <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                 </div>
-                <button type="submit" disabled={passwordLoading} className="max-2xl px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-900 disabled:bg-gray-400">
-                    {passwordLoading ? "Updating..." : "Update Password"}
+                <button type="submit" disabled={passwordMutation.isPending} className="max-2xl px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-900 disabled:bg-gray-400">
+                    {passwordMutation.isPending ? "Updating..." : "Update Password"}
                 </button>
             </form>
         </div>

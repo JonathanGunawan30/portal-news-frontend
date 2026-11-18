@@ -1,65 +1,53 @@
 "use client"
 
-import {useEffect, useState} from "react";
-import {Content} from "@/model/Content";
-import {ApiResponse, Pagination} from "@/model/ApiResponse";
-import axiosInstance from "@lib/axios";
-import {toast} from "sonner";
+import { useEffect, useState } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { Content } from "@/model/Content";
+import { ApiResponse } from "@/model/ApiResponse";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner";
 import Link from "next/link";
 import Image from "next/image";
-import {format} from "date-fns";
-import {enUS} from "date-fns/locale";
-import {Button} from "@/components/ui/button";
-import {ArrowLeft, ArrowRight} from "lucide-react";
-import {ContentCardSkeleton} from "@/components/content-card-skeleton";
+import { format } from "date-fns";
+import { enUS } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ContentCardSkeleton } from "@/components/content-card-skeleton";
 
 export default function ContentAll() {
-    const [contents, setContents] = useState<Content[]>([])
-    const [pagination, setPagination] = useState<Pagination | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
-    const [isLoading, setIsLoading] = useState(true)
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const changePage = (page: number) => {
-        setIsLoading(true)
-        setCurrentPage(page)
-    }
-
-    const handlePrevPage = () => {
-        if (pagination && currentPage > 1){
-            changePage(currentPage - 1)
-        }
-    }
-
-    const handleNextPage = () => {
-        if (pagination && currentPage < pagination.total_page){
-            changePage(currentPage + 1)
-        }
-    }
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["fe", "contents", "all", currentPage],
+        queryFn: () =>
+            apiFetch<ApiResponse<Content[]>>(`/fe/contents?limit=9&page=${currentPage}`),
+        placeholderData: keepPreviousData,
+    });
 
     useEffect(() => {
-        let cancelled = false
-        const loadContents = async () => {
-            try {
-                const res = await axiosInstance.get<ApiResponse<Content[]>>(`/fe/contents?limit=9&page=${currentPage}`)
-                if (!cancelled) {
-                    setContents(res.data.data)
-                    setPagination(res.data.pagination ?? null)
-                }
-            } catch {
-                if (!cancelled) {
-                    toast.error("Failed to fetch contents")
-                }
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false)
-                }
-            }
+        if (isError) {
+            toast.error("Failed to fetch contents");
         }
-        loadContents()
-        return () => {
-            cancelled = true
+    }, [isError]);
+
+    const contents = data?.data ?? [];
+    const pagination = data?.pagination ?? null;
+
+    const changePage = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handlePrevPage = () => {
+        if (pagination && currentPage > 1) {
+            changePage(currentPage - 1);
         }
-    }, [currentPage])
+    };
+
+    const handleNextPage = () => {
+        if (pagination && currentPage < pagination.total_page) {
+            changePage(currentPage + 1);
+        }
+    };
 
 
     return (

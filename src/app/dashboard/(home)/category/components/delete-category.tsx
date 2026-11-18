@@ -1,11 +1,12 @@
 "use client"
 
 import { FC } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Trash } from "lucide-react"
 import { toast } from "sonner"
 import { deleteCategory } from "../lib/action"
-import {ConfirmDialog} from "@/components/ui/ConfirmDialog"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 
 interface DeleteCategoryProps {
     id: number
@@ -13,15 +14,22 @@ interface DeleteCategoryProps {
 }
 
 const DeleteCategory: FC<DeleteCategoryProps> = ({ id, onDelete }) => {
-    const handleDelete = async () => {
-        try {
-            await deleteCategory(id)
+    const queryClient = useQueryClient()
+
+    const deleteMutation = useMutation({
+        mutationFn: () => deleteCategory(id),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "categories"] }),
+                queryClient.invalidateQueries({ queryKey: ["fe", "categories"] }),
+            ])
             toast.success("Category deleted successfully!")
             onDelete(id)
-        } catch {
+        },
+        onError: () => {
             toast.error("Failed to delete category.")
-        }
-    }
+        },
+    })
 
     return (
         <ConfirmDialog
@@ -35,7 +43,7 @@ const DeleteCategory: FC<DeleteCategoryProps> = ({ id, onDelete }) => {
             description="This action cannot be undone. The category will be permanently deleted from the system."
             confirmText="Yes, Delete"
             cancelText="Cancel"
-            onConfirm={handleDelete}
+            onConfirm={() => deleteMutation.mutate()}
         />
     )
 }

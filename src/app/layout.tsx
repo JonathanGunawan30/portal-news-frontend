@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { GoogleAnalytics } from "@/components/google-analytics"
 import { CookieConsent } from "@/components/CookieConsent"
+import { QueryProvider } from "@/components/query-provider"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
 
@@ -66,12 +67,14 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${inter.className} antialiased`}>
-                <Suspense fallback={null}>
-                    <GoogleAnalytics />
-                </Suspense>
-                {children}
-                <CookieConsent />
-                <Toaster richColors position="top-right" />
+                <QueryProvider>
+                    <Suspense fallback={null}>
+                        <GoogleAnalytics />
+                    </Suspense>
+                    {children}
+                    <CookieConsent />
+                    <Toaster richColors position="top-right" />
+                </QueryProvider>
             </body>
         </html>
     )

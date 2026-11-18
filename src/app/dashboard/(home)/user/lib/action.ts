@@ -1,8 +1,8 @@
 "use server"
 
-import axios from "axios";
-import axiosInstance from "@lib/axios";
 import { cookies } from "next/headers";
+import { apiFetch, ApiError } from "@/lib/api";
+import { ApiResponse } from "@/model/ApiResponse";
 import { User, UpdatePasswordRequest } from "@/model/User";
 
 export interface ActionResult<T = unknown> {
@@ -11,32 +11,35 @@ export interface ActionResult<T = unknown> {
     message?: string;
 }
 
-const getAuthHeaders = async () => {
+const getAuthCookieHeader = async (): Promise<string> => {
     const sessionCookie = (await cookies()).get("X-API-TOKEN")?.value;
     if (!sessionCookie) {
         throw new Error("Unauthorized: Session cookie not found.");
     }
-    return {
-        headers: {
-            Cookie: `X-API-TOKEN=${sessionCookie}`,
-        },
-    };
+    return `X-API-TOKEN=${sessionCookie}`;
 };
 
 export const getUserProfile = async (): Promise<User> => {
-    const res = await axiosInstance.get("/admin/users/profile", await getAuthHeaders());
-    return res.data.data;
+    const cookieHeader = await getAuthCookieHeader();
+    const res = await apiFetch<ApiResponse<User>>("/admin/users/profile", {
+        cookieHeader,
+        cache: "no-store",
+    });
+    return res.data;
 };
 
 export const updatePassword = async (payload: UpdatePasswordRequest): Promise<ActionResult> => {
     try {
-        const res = await axiosInstance.put("/admin/users/update-password", payload, await getAuthHeaders());
-        return { ok: true, data: res.data };
+        const cookieHeader = await getAuthCookieHeader();
+        const data = await apiFetch("/admin/users/update-password", {
+            method: "PUT",
+            cookieHeader,
+            body: JSON.stringify(payload),
+        });
+        return { ok: true, data };
     } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-            const data = err.response?.data as { message?: string; meta?: { message?: string } } | undefined;
-            const message = data?.meta?.message || data?.message || "Failed to update password.";
-            return { ok: false, message };
+        if (err instanceof ApiError) {
+            return { ok: false, message: err.message };
         }
         return {
             ok: false,

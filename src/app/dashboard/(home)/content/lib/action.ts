@@ -1,77 +1,59 @@
-import axiosInstance from "../../../../../../lib/axios";
+import { apiFetch } from "@/lib/api";
+import { ApiResponse } from "@/model/ApiResponse";
 import { Category } from "@/model/Category";
+import { Content } from "@/model/Content";
 
-/**
- * CREATE content
- */
-export const createContent = async (contentData: any) => {
-    try {
-        const res = await axiosInstance.post("/admin/contents", contentData, {
-            withCredentials: true,
-        });
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+export interface ContentPayload {
+    title: string;
+    excerpt: string;
+    description: string;
+    tags: string;
+    status: string;
+    category_id: number | null;
+    image: string;
+}
+
+export const getAdminContents = async (): Promise<Content[]> => {
+    const res = await apiFetch<ApiResponse<Content[]>>("/admin/contents");
+    return res.data;
 };
 
-/**
- * UPDATE content
- */
-export const updateContent = async (id: number, contentData: any) => {
-    try {
-        const res = await axiosInstance.put(`/admin/contents/${id}`, contentData, {
-            withCredentials: true,
-        });
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+export const createContent = async (contentData: ContentPayload) => {
+    return apiFetch("/admin/contents", {
+        method: "POST",
+        body: JSON.stringify(contentData),
+    });
 };
 
-/**
- * DELETE content
- */
+export const updateContent = async (id: number, contentData: ContentPayload) => {
+    return apiFetch(`/admin/contents/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(contentData),
+    });
+};
+
 export const deleteContent = async (id: number) => {
-    try {
-        const res = await axiosInstance.delete(`/admin/contents/${id}`, {
-            withCredentials: true,
-        });
-        return res.data;
-    } catch (err) {
-        throw err;
-    }
+    return apiFetch(`/admin/contents/${id}`, {
+        method: "DELETE",
+    });
 };
 
-/**
- * UPLOAD image
- */
 export const uploadImage = async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append("image", file);
 
-    try {
-        const res = await axiosInstance.post("/admin/contents/upload-image", formData, {
-            withCredentials: true,
-        });
+    const res = await apiFetch<ApiResponse<{ url_image: string }>>(
+        "/admin/contents/upload-image",
+        {
+            method: "POST",
+            body: formData,
+        }
+    );
 
-        return { url: res.data.data.url_image };
-    } catch (err) {
-        console.error("Upload error:", err);
-        throw err;
-    }
+    return { url: res.data.url_image };
 };
 
-/**
- * GET all categories
- */
 export const getAllCategories = async (): Promise<Category[]> => {
-    try {
-        const res = await axiosInstance.get("/admin/categories", {
-            withCredentials: true,
-        });
-        return res.data.data;
-    } catch (err) {
-        throw err;
-    }
+    const res = await apiFetch<ApiResponse<Category[]>>("/admin/categories");
+    return res.data;
 };

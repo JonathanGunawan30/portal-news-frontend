@@ -1,27 +1,28 @@
-import { createServerAxiosInstance } from "@lib/axios";
-import { Content } from "@/model/Content";
 import { cookies } from "next/headers";
-import axios from "axios";
+import { apiFetch, ApiError } from "@/lib/api";
+import { ApiResponse } from "@/model/ApiResponse";
+import { Content } from "@/model/Content";
 
 export const getContentById = async (id: number): Promise<Content> => {
     const cookieStore = await cookies();
     const token = cookieStore.get("X-API-TOKEN")?.value ?? "";
-    const cookieHeader = `X-API-TOKEN=${token}`;
 
     if (!token) {
         throw new Error("Unauthorized: No session cookie found");
     }
 
     try {
-        const serverAxios = createServerAxiosInstance(cookieHeader);
-        const res = await serverAxios.get(`/admin/contents/${id}`);
-        return res.data.data;
+        const res = await apiFetch<ApiResponse<Content>>(`/admin/contents/${id}`, {
+            cookieHeader: `X-API-TOKEN=${token}`,
+            cache: "no-store",
+        });
+        return res.data;
     } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-            if (err.response?.status === 401) {
+        if (err instanceof ApiError) {
+            if (err.status === 401) {
                 throw new Error("Unauthorized");
             }
-            console.error("API Error:", err.response?.data);
+            console.error("API Error:", err.data);
         }
         throw err;
     }

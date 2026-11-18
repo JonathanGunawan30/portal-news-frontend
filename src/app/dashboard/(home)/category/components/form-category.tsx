@@ -3,11 +3,12 @@
 import { Category } from "@/model/Category"
 import { FC, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createCategory, updateCategory } from "../lib/action"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { SubmitButton } from "../../components/submit-button"
-import {handleAxiosError} from "@/lib/error";
+import { handleApiError } from "@/lib/error"
 
 interface FormCategoryProps {
     type?: "ADD" | "EDIT"
@@ -16,32 +17,44 @@ interface FormCategoryProps {
 
 const FormCategoryPage: FC<FormCategoryProps> = ({ type = "ADD", defaultValue }) => {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const [title, setTitle] = useState(defaultValue?.title ?? "")
-    const [loading, setLoading] = useState(false)
 
-    const handleCategory = async (e: React.FormEvent) => {
+    const mutation = useMutation({
+        mutationFn: async (trimmedTitle: string) => {
+            if (type === "ADD") {
+                return createCategory({ title: trimmedTitle })
+            }
+            if (type === "EDIT" && defaultValue) {
+                return updateCategory(defaultValue.id, { title: trimmedTitle })
+            }
+            throw new Error("Invalid form configuration")
+        },
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "categories"] }),
+                queryClient.invalidateQueries({ queryKey: ["fe", "categories"] }),
+            ])
+            toast.success(
+                type === "ADD"
+                    ? "Category created successfully!"
+                    : "Category updated successfully!"
+            )
+            router.push("/dashboard/category")
+        },
+        onError: (err) => {
+            handleApiError(err)
+        },
+    })
+
+    const handleCategory = (e: React.FormEvent) => {
         e.preventDefault()
-        if (!title.trim()) {
+        const trimmed = title.trim()
+        if (!trimmed) {
             toast.error("Category title is required")
             return
         }
-        setLoading(true)
-
-        try {
-            if (type === "ADD") {
-                await createCategory({ title: title.trim() });
-                toast.success("Category created successfully!");
-            } else if (type === "EDIT" && defaultValue) {
-                await updateCategory(defaultValue.id, { title: title.trim() });
-                toast.success("Category updated successfully!");
-            }
-            router.push("/dashboard/category");
-        } catch (err: any) {
-            handleAxiosError(err);
-        } finally {
-            setLoading(false);
-        }
-
+        mutation.mutate(trimmed)
     }
 
     return (
@@ -56,7 +69,7 @@ const FormCategoryPage: FC<FormCategoryProps> = ({ type = "ADD", defaultValue })
                 />
             </div>
 
-            <SubmitButton loading={loading} type={type} />
+            <SubmitButton loading={mutation.isPending} type={type} />
         </form>
     )
 }

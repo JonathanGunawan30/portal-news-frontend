@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useEffect, useState, use } from "react"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { Content } from "@/model/Content"
-import { ApiResponse, Pagination } from "@/model/ApiResponse"
-import axiosInstance from "@lib/axios"
+import { ApiResponse } from "@/model/ApiResponse"
+import { apiFetch, ApiError } from "@/lib/api"
 import { toast } from "sonner"
 import Link from "next/link"
 import Image from "next/image"
@@ -20,14 +21,40 @@ interface ContentByCategoryPageProps {
 
 export default function ContentByCategory({ params }: ContentByCategoryPageProps) {
     const { id: categoryId } = use(params)
-    const [contents, setContents] = useState<Content[]>([])
-    const [pagination, setPagination] = useState<Pagination | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
-    const [isLoading, setIsLoading] = useState(true)
-    const [isNotFound, setIsNotFound] = useState(false)
+
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["fe", "contents", "category", categoryId, currentPage],
+        queryFn: () =>
+            apiFetch<ApiResponse<Content[]>>(
+                `/fe/contents?limit=9&page=${currentPage}&category_id=${categoryId}`
+            ),
+        placeholderData: keepPreviousData,
+        retry: (failureCount, err) => {
+            if (err instanceof ApiError && (err.status === 400 || err.status === 404)) {
+                return false
+            }
+            return failureCount < 1
+        },
+    })
+
+    const isNotFound =
+        error instanceof ApiError && (error.status === 400 || error.status === 404)
+
+    useEffect(() => {
+        if (error && !isNotFound) {
+            toast.error("Failed to fetch contents")
+        }
+    }, [error, isNotFound])
+
+    if (isNotFound) {
+        notFound()
+    }
+
+    const contents = data?.data ?? []
+    const pagination = data?.pagination ?? null
 
     const changePage = (page: number) => {
-        setIsLoading(true)
         setCurrentPage(page)
     }
 
@@ -41,45 +68,6 @@ export default function ContentByCategory({ params }: ContentByCategoryPageProps
         if (pagination && currentPage < pagination.total_page) {
             changePage(currentPage + 1)
         }
-    }
-
-    useEffect(() => {
-        let cancelled = false
-        const loadContents = async () => {
-            try {
-                const res = await axiosInstance.get<ApiResponse<Content[]>>(
-                    `/fe/contents?limit=9&page=${currentPage}&category_id=${categoryId}`
-                )
-                if (!cancelled) {
-                    setContents(res.data.data)
-                    setPagination(res.data.pagination ?? null)
-                }
-            } catch (err: any) {
-                if (!cancelled) {
-                    if (err.response?.status === 400 || err.response?.status === 404) {
-                        setIsNotFound(true)
-                        return
-                    }
-                    toast.error("Failed to fetch contents")
-                }
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false)
-                }
-            }
-        }
-        loadContents()
-        if (isNotFound) {
-        notFound()
-    }
-
-    return () => {
-            cancelled = true
-        }
-    }, [currentPage, categoryId])
-
-    if (isNotFound) {
-        notFound()
     }
 
     return (
