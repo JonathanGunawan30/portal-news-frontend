@@ -55,7 +55,6 @@ export default function ContentPage() {
                             columns={contentColumns({
                                 onDelete: (id) => {
                                     setContents((prev) => prev.filter((c) => c.id !== id))
-                                    toast.success("Content deleted successfully!")
                                 },
                             })}
                             data={contents}

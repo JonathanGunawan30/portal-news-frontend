@@ -45,11 +45,15 @@ export function UpdatePasswordForm() {
 
         setPasswordLoading(true);
         try {
-            await updatePassword({
+            const result = await updatePassword({
                 current_password: currentPassword,
                 new_password: newPassword,
                 confirm_password: confirmPassword,
             });
+            if (!result.ok) {
+                toast.error(result.message || "Failed to update password.");
+                return;
+            }
             toast.success("Password updated successfully!");
             setCurrentPassword("");
             setNewPassword("");

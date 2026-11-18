@@ -22,12 +22,15 @@ export default function ButtonLogout()  {
 
     return (
         <div className="space-y-2">
-            <form action={handleLogout}>
-                <Button type="submit" variant="destructive" className="flex items-center gap-2 hover:bg-red-700 transition-colors">
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                </Button>
-            </form>
+            <Button
+                type="button"
+                onClick={handleLogout}
+                variant="destructive"
+                className="flex items-center gap-2 hover:bg-red-700 transition-colors"
+            >
+                <LogOut className="h-4 w-4" />
+                Logout
+            </Button>
         </div>
     )
 

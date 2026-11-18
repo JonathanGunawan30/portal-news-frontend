@@ -17,20 +17,22 @@ interface FormCategoryProps {
 const FormCategoryPage: FC<FormCategoryProps> = ({ type = "ADD", defaultValue }) => {
     const router = useRouter()
     const [title, setTitle] = useState(defaultValue?.title ?? "")
-    const [error, setError] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
 
     const handleCategory = async (e: React.FormEvent) => {
         e.preventDefault()
-        setError([])
+        if (!title.trim()) {
+            toast.error("Category title is required")
+            return
+        }
         setLoading(true)
 
         try {
             if (type === "ADD") {
-                await createCategory({ title });
+                await createCategory({ title: title.trim() });
                 toast.success("Category created successfully!");
             } else if (type === "EDIT" && defaultValue) {
-                await updateCategory(defaultValue.id, { title });
+                await updateCategory(defaultValue.id, { title: title.trim() });
                 toast.success("Category updated successfully!");
             }
             router.push("/dashboard/category");
@@ -50,14 +52,8 @@ const FormCategoryPage: FC<FormCategoryProps> = ({ type = "ADD", defaultValue })
                     placeholder="Category title..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    required
                 />
-                {error.length > 0 && (
-                    <div className="mt-2 text-sm text-red-500">
-                        {error.map((err, i) => (
-                            <p key={i}>{err}</p>
-                        ))}
-                    </div>
-                )}
             </div>
 
             <SubmitButton loading={loading} type={type} />

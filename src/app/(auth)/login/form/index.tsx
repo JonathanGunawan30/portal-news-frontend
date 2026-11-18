@@ -59,19 +59,24 @@ export default function FormSignIn() {
                 throw new Error("Configuration error");
             }
 
-            // Ensure grecaptcha is ready before executing
-            await new Promise<void>((resolve) => {
+            // Ensure grecaptcha is ready before executing (with 10s timeout)
+            await new Promise<void>((resolve, reject) => {
                 if (window.grecaptcha?.enterprise) {
                     window.grecaptcha.enterprise.ready(() => resolve());
-                } else {
-                    // Poll if not yet available
-                    const interval = setInterval(() => {
-                        if (window.grecaptcha?.enterprise) {
-                            clearInterval(interval);
-                            window.grecaptcha.enterprise.ready(() => resolve());
-                        }
-                    }, 100);
+                    return;
                 }
+
+                const timeoutMs = 10000;
+                const startTime = Date.now();
+                const interval = setInterval(() => {
+                    if (window.grecaptcha?.enterprise) {
+                        clearInterval(interval);
+                        window.grecaptcha.enterprise.ready(() => resolve());
+                    } else if (Date.now() - startTime >= timeoutMs) {
+                        clearInterval(interval);
+                        reject(new Error("Security verification timed out. Please reload the page."));
+                    }
+                }, 100);
             });
 
             const recaptchaToken = await window.grecaptcha.enterprise.execute(
@@ -91,9 +96,13 @@ export default function FormSignIn() {
             }, { withCredentials: true })
             toast.success("Welcome back! Login successful.");
             router.push("/dashboard");
-        } catch (err) {
+        } catch (err: any) {
             setPassword("")
-            toast.error("Invalid email or password. Please try again.")
+            if (err?.response) {
+                toast.error("Invalid email or password. Please try again.")
+            } else {
+                toast.error(err?.message || "Unable to sign in. Please try again.")
+            }
         } finally {
             setLoading(false)
         }

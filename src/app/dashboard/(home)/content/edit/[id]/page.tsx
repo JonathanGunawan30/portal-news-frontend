@@ -13,28 +13,16 @@ export default async function EditContentPage({ params }: EditContentPageProps) 
     const { id: rawId } = await params
     const id = Number(rawId)
 
-    console.log("[DEBUG] Parsed id:", id)
-
     if (isNaN(id)) {
-        console.error("[DEBUG] Invalid ID, not a number")
         notFound()
     }
 
-    let contentToEdit, categoryList
-    try {
-        ;[contentToEdit, categoryList] = await Promise.all([
-            getContentById(id),
-            getAllCategories(),
-        ])
-        console.log("[DEBUG] contentToEdit:", contentToEdit)
-        console.log("[DEBUG] categoryList:", categoryList)
-    } catch (err) {
-        console.error("[DEBUG] Error fetching data:", err)
-        throw err
-    }
+    const [contentToEdit, categoryList] = await Promise.all([
+        getContentById(id),
+        getAllCategories(),
+    ])
 
     if (!contentToEdit) {
-        console.error("[DEBUG] Content not found for id:", id)
         notFound()
     }
 

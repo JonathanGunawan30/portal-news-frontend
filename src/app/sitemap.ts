@@ -7,19 +7,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     let contentUrls: MetadataRoute.Sitemap = [];
 
+    const apiBase =
+        process.env.BACKEND_URL
+            ? `${process.env.BACKEND_URL}/api`
+            : process.env.NEXT_PUBLIC_API_URL;
+
     try {
-        const res = await fetch(`${process.env.BACKEND_URL}/fe/contents?per_page=100`, {
-            next: { revalidate: 3600 },
-        });
-        if (res.ok) {
-            const json: ApiResponse<Content[]> = await res.json();
-            const contents = json.data ?? [];
-            contentUrls = contents.map((content) => ({
-                url: `${baseUrl}/content-all/detail/${content.id}`,
-                lastModified: new Date(content.created_at),
-                changeFrequency: "weekly" as const,
-                priority: 0.8,
-            }));
+        if (apiBase && apiBase.startsWith("http")) {
+            const res = await fetch(`${apiBase}/fe/contents?limit=100`, {
+                next: { revalidate: 3600 },
+            });
+            if (res.ok) {
+                const json: ApiResponse<Content[]> = await res.json();
+                const contents = json.data ?? [];
+                contentUrls = contents.map((content) => ({
+                    url: `${baseUrl}/content-all/detail/${content.id}`,
+                    lastModified: new Date(content.created_at),
+                    changeFrequency: "weekly" as const,
+                    priority: 0.8,
+                }));
+            }
         }
     } catch (err) {
         console.error("Failed to fetch contents for sitemap:", err);

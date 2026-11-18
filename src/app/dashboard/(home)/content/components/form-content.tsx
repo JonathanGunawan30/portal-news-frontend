@@ -1,6 +1,6 @@
 "use client"
 
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createContent, updateContent, uploadImage } from "../lib/action"
 import { Input } from "@/components/ui/input"
@@ -30,8 +30,27 @@ const FormContentPage: FC<FormContentProps> = ({ type = "ADD", defaultValue, cat
     const [previewUrl, setPreviewUrl] = useState<string>(defaultValue?.image ?? "")
     const [loading, setLoading] = useState(false)
 
+    useEffect(() => {
+        return () => {
+            if (previewUrl.startsWith("blob:")) {
+                URL.revokeObjectURL(previewUrl)
+            }
+        }
+    }, [previewUrl])
+
     const handleContent = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!title.trim()) {
+            toast.error("Title is required")
+            return
+        }
+
+        if (!categoryId) {
+            toast.error("Category is required")
+            return
+        }
+
         setLoading(true)
 
         try {

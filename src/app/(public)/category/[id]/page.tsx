@@ -24,40 +24,63 @@ export default function ContentByCategory({ params }: ContentByCategoryPageProps
     const [pagination, setPagination] = useState<Pagination | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [isLoading, setIsLoading] = useState(true)
+    const [isNotFound, setIsNotFound] = useState(false)
 
-    const fetchContents = async (page: number = 1) => {
+    const changePage = (page: number) => {
         setIsLoading(true)
-        try {
-            const res = await axiosInstance.get<ApiResponse<Content[]>>(
-                `/fe/contents?limit=9&page=${page}&category_id=${categoryId}`
-            )
-            setContents(res.data.data)
-            setPagination(res.data.pagination ?? null)
-        } catch (err: any) {
-            if (err.response?.status === 400) {
-                notFound()
-            }
-            toast.error("Failed to fetch contents")
-        } finally {
-            setIsLoading(false)
-        }
+        setCurrentPage(page)
     }
 
     const handlePrevPage = () => {
         if (pagination && currentPage > 1) {
-            setCurrentPage(currentPage - 1)
+            changePage(currentPage - 1)
         }
     }
 
     const handleNextPage = () => {
         if (pagination && currentPage < pagination.total_page) {
-            setCurrentPage(currentPage + 1)
+            changePage(currentPage + 1)
         }
     }
 
     useEffect(() => {
-        fetchContents(currentPage).then(() => console.info("Contents fetched successfully"))
+        let cancelled = false
+        const loadContents = async () => {
+            try {
+                const res = await axiosInstance.get<ApiResponse<Content[]>>(
+                    `/fe/contents?limit=9&page=${currentPage}&category_id=${categoryId}`
+                )
+                if (!cancelled) {
+                    setContents(res.data.data)
+                    setPagination(res.data.pagination ?? null)
+                }
+            } catch (err: any) {
+                if (!cancelled) {
+                    if (err.response?.status === 400 || err.response?.status === 404) {
+                        setIsNotFound(true)
+                        return
+                    }
+                    toast.error("Failed to fetch contents")
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsLoading(false)
+                }
+            }
+        }
+        loadContents()
+        if (isNotFound) {
+        notFound()
+    }
+
+    return () => {
+            cancelled = true
+        }
     }, [currentPage, categoryId])
+
+    if (isNotFound) {
+        notFound()
+    }
 
     return (
         <div>
@@ -95,7 +118,7 @@ export default function ContentByCategory({ params }: ContentByCategoryPageProps
                                                 />
                                             ) : (
                                                 <Image
-                                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSROxdqcF6F-dngsRT-lYEA46xmPbXSFFd1FQ&s"
+                                                    src="/img/content-not-found.png"
                                                     alt={content.title}
                                                     fill
                                                     className="object-cover transition-all"
@@ -181,7 +204,7 @@ export default function ContentByCategory({ params }: ContentByCategoryPageProps
                                     <Button
                                         key={page}
                                         type="button"
-                                        onClick={() => setCurrentPage(page)}
+                                        onClick={() => changePage(page)}
                                         className={`px-4 py-2 text-sm font-medium border-r border-gray-300 rounded-none ${
                                             currentPage === page
                                                 ? "bg-gray-900 text-white"
