@@ -1,17 +1,26 @@
 import { toast } from "sonner";
+import { ApiError } from "@/lib/api";
 
-export function handleAxiosError(err: any) {
-    if (err.response) {
-        const status = err.response.status;
-        const data = err.response.data;
+interface ErrorPayload {
+    message?: string;
+    errors?: string[];
+    meta?: {
+        message?: string;
+        errors?: string[];
+    };
+}
 
-        const message = data?.meta?.message || data?.message;
+export function handleApiError(err: unknown) {
+    if (err instanceof ApiError) {
+        const status = err.status;
+        const data = err.data as ErrorPayload | null;
+        const message = data?.meta?.message || data?.message || err.message;
 
         if (status === 400) {
             if (Array.isArray(data?.errors)) {
-                data.errors.forEach((e: string) => toast.error(e));
+                data.errors.forEach((e) => toast.error(e));
             } else if (Array.isArray(data?.meta?.errors)) {
-                data.meta.errors.forEach((e: string) => toast.error(e));
+                data.meta.errors.forEach((e) => toast.error(e));
             } else {
                 toast.error(message || "Validation error");
             }
@@ -22,9 +31,13 @@ export function handleAxiosError(err: any) {
         } else {
             toast.error(message || "Unexpected error");
         }
-    } else if (err.request) {
-        toast.error("No response from server");
-    } else {
-        toast.error(err.message || "Something went wrong");
+        return;
     }
+
+    if (err instanceof Error) {
+        toast.error(err.message || "Something went wrong");
+        return;
+    }
+
+    toast.error("Something went wrong");
 }
