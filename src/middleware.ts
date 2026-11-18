@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 async function isTokenValid(token: string): Promise<boolean> {
+    const publicApi = process.env.NEXT_PUBLIC_API_URL;
     const apiBase =
-        process.env.BACKEND_URL
-            ? `${process.env.BACKEND_URL}/api`
-            : process.env.NEXT_PUBLIC_API_URL;
+        publicApi && publicApi.startsWith("http")
+            ? publicApi
+            : process.env.BACKEND_URL
+                ? `${process.env.BACKEND_URL}/api`
+                : null;
 
-    if (!apiBase || !apiBase.startsWith("http")) {
+    if (!apiBase) {
         // Fallback: cannot verify remotely if only relative path is configured
         return true;
     }

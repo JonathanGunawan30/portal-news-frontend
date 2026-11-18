@@ -7,13 +7,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     let contentUrls: MetadataRoute.Sitemap = [];
 
+    const publicApi = process.env.NEXT_PUBLIC_API_URL;
     const apiBase =
-        process.env.BACKEND_URL
-            ? `${process.env.BACKEND_URL}/api`
-            : process.env.NEXT_PUBLIC_API_URL;
+        publicApi && publicApi.startsWith("http")
+            ? publicApi
+            : process.env.BACKEND_URL
+                ? `${process.env.BACKEND_URL}/api`
+                : null;
 
     try {
-        if (apiBase && apiBase.startsWith("http")) {
+        if (apiBase) {
             const res = await fetch(`${apiBase}/fe/contents?limit=100`, {
                 next: { revalidate: 3600 },
             });
