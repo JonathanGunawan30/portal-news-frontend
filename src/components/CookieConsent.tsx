@@ -1,24 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function CookieConsent() {
-    const [isVisible, setIsVisible] = useState(false);
+function subscribeConsent(callback: () => void) {
+    window.addEventListener("cookie_consent_updated", callback);
+    window.addEventListener("storage", callback);
+    return () => {
+        window.removeEventListener("cookie_consent_updated", callback);
+        window.removeEventListener("storage", callback);
+    };
+}
 
-    useEffect(() => {
-        const consent = localStorage.getItem("cookie_consent");
-        if (!consent) {
-            setIsVisible(true);
-        }
-    }, []);
+function getConsentSnapshot(): boolean {
+    return !localStorage.getItem("cookie_consent");
+}
+
+function getServerSnapshot(): boolean {
+    return false;
+}
+
+export function CookieConsent() {
+    const isVisible = useSyncExternalStore(
+        subscribeConsent,
+        getConsentSnapshot,
+        getServerSnapshot
+    );
 
     const handleAccept = () => {
         localStorage.setItem("cookie_consent", "true");
-        setIsVisible(false);
         window.dispatchEvent(new Event("cookie_consent_accepted"));
+        window.dispatchEvent(new Event("cookie_consent_updated"));
+    };
+
+    const handleReject = () => {
+        localStorage.setItem("cookie_consent", "false");
+        window.dispatchEvent(new Event("cookie_consent_updated"));
     };
 
     if (!isVisible) {
@@ -48,6 +67,14 @@ export function CookieConsent() {
                         className="text-xs"
                     >
                         <Link href="/privacy-policy">Learn More</Link>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleReject}
+                        className="text-xs px-4"
+                    >
+                        Reject
                     </Button>
                     <Button
                         variant="default"

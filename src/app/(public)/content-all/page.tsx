@@ -19,35 +19,46 @@ export default function ContentAll() {
     const [currentPage, setCurrentPage] = useState(1)
     const [isLoading, setIsLoading] = useState(true)
 
-    const fetchContents = async (page: number = 1) => {
+    const changePage = (page: number) => {
         setIsLoading(true)
-        try {
-            const res = await axiosInstance.get<ApiResponse<Content[]>>(`/fe/contents?limit=9&page=${page}`)
-            setContents(res.data.data)
-            setPagination(res.data.pagination ?? null)
-        } catch (err){
-            toast.error("Failed to fetch contents")
-        } finally {
-            setIsLoading(false)
-        }
+        setCurrentPage(page)
     }
-
-
 
     const handlePrevPage = () => {
         if (pagination && currentPage > 1){
-            setCurrentPage(currentPage - 1)
+            changePage(currentPage - 1)
         }
     }
 
     const handleNextPage = () => {
         if (pagination && currentPage < pagination.total_page){
-            setCurrentPage(currentPage + 1)
+            changePage(currentPage + 1)
         }
     }
 
     useEffect(() => {
-        fetchContents(currentPage).then(r => console.info("Contents fetched successfully"));
+        let cancelled = false
+        const loadContents = async () => {
+            try {
+                const res = await axiosInstance.get<ApiResponse<Content[]>>(`/fe/contents?limit=9&page=${currentPage}`)
+                if (!cancelled) {
+                    setContents(res.data.data)
+                    setPagination(res.data.pagination ?? null)
+                }
+            } catch {
+                if (!cancelled) {
+                    toast.error("Failed to fetch contents")
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsLoading(false)
+                }
+            }
+        }
+        loadContents()
+        return () => {
+            cancelled = true
+        }
     }, [currentPage])
 
 
@@ -112,22 +123,20 @@ export default function ContentAll() {
                                         </Link>
                                     </h2>
                                     <div className="mt-3 flex items-center space-x-3 text-gray-500">
-                                        <Link href={""}>
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative h-5 w-5 flex-shrink-0">
-                                                    <Image
-                                                        src="/img/admin.png"
-                                                        alt="author"
-                                                        width={20}
-                                                        height={20}
-                                                        className="rounded-full object-cover"
-                                                    />
-                                                </div>
-                                                <span className="truncate text-sm">
-                                            {content.author}
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative h-5 w-5 flex-shrink-0">
+                                                <Image
+                                                    src="/img/admin.png"
+                                                    alt="author"
+                                                    width={20}
+                                                    height={20}
+                                                    className="rounded-full object-cover"
+                                                />
                                             </div>
-                                        </Link>
+                                            <span className="truncate text-sm">
+                                                {content.author}
+                                            </span>
+                                        </div>
                                         <span className="text-xs text-gray-300">•</span>
                                         <time dateTime={content.created_at} className="truncate text-sm">{format(new Date(content.created_at), 'MMMM d, y', {locale: enUS})}</time>
                                     </div>
@@ -154,7 +163,7 @@ export default function ContentAll() {
                                     <Button
                                         key={page}
                                         type="button"
-                                        onClick={() => setCurrentPage(page)}
+                                        onClick={() => changePage(page)}
                                         className={`px-4 py-2 text-sm font-medium border-r border-gray-300 rounded-none ${
                                             currentPage === page
                                                 ? "bg-gray-900 text-white"

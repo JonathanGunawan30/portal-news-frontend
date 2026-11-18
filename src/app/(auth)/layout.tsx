@@ -1,5 +1,4 @@
 import { Inter } from "next/font/google"
-import { Toaster } from "sonner"
 import "../globals.css"
 import type { Metadata } from "next"
 
@@ -47,7 +46,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="w-full max-w-md px-4">
                 {children}
             </div>
-            <Toaster richColors position="top-right" />
         </main>
     )
 }

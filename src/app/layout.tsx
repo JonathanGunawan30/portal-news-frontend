@@ -4,6 +4,7 @@ import "./globals.css"
 import { GoogleAnalytics } from "@/components/google-analytics"
 import { CookieConsent } from "@/components/CookieConsent"
 import { Suspense } from "react"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -70,6 +71,7 @@ export default function RootLayout({
                 </Suspense>
                 {children}
                 <CookieConsent />
+                <Toaster richColors position="top-right" />
             </body>
         </html>
     )
